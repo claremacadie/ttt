@@ -1,0 +1,15 @@
+
+[1mFrom:[0m /home/ec2-user/environment/ttt/tictactoe.rb:79 TTTGame#human_moves:
+
+    [1;34m71[0m: [32mdef[0m [1;34mhuman_moves[0m
+    [1;34m72[0m:   puts [31m[1;31m"[0m[31mChoose a square between 1-9:[1;31m"[0m[31m[0m
+    [1;34m73[0m:   square = [1;36mnil[0m
+    [1;34m74[0m:   loop [32mdo[0m
+    [1;34m75[0m:     square = gets.chomp.to_i
+    [1;34m76[0m:     [32mbreak[0m [32mif[0m ([1;34m1[0m..[1;34m9[0m).include?(square)
+    [1;34m77[0m:     puts [31m[1;31m"[0m[31mSorry, that's not a valid choice.[1;31m"[0m[31m[0m
+    [1;34m78[0m:   [32mend[0m
+ => [1;34m79[0m:   binding.pry
+    [1;34m80[0m:   board.set_square_at(square, human.marker)
+    [1;34m81[0m: [32mend[0m
+
