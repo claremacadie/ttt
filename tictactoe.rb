@@ -5,7 +5,71 @@ module Formattable
   end
 
   def clear
-    system('clear')
+    # system('clear')
+  end
+
+  def blank_line
+    puts
+  end
+
+  def joinor(arr, delimiter=', ', word='or')
+    case arr.size
+    when 0 then ''
+    when 1 then arr.first
+    when 2 then arr.join(" #{word} ")
+    else
+      arr[-1] = "#{word} #{arr.last}"
+      arr.join(delimiter)
+    end
+  end
+end
+
+module Questionable
+  YES_NO_OPTIONS = %w(y yes n no)
+
+  def ask_yes_no_question(question)
+    answer = nil
+    loop do
+      puts question
+      answer = gets.chomp.downcase.strip
+      break if YES_NO_OPTIONS.include? answer
+      puts "Sorry, must be y or n."
+    end
+    answer[0] == 'y'
+  end
+
+  def ask_open_question(question, char_limit = 0)
+    answer = nil
+    loop do
+      puts question
+      answer = gets.chomp.strip
+      break unless answer.empty? || answer.size > char_limit
+      puts "Sorry, must enter a value and it must be less than 15 characters."
+    end
+    answer
+  end
+
+  def ask_closed_question(question, options)
+    downcase_options = options.map(&:downcase)
+    answer = nil
+    loop do
+      puts question
+      answer = gets.chomp.downcase.strip
+      break if downcase_options.include?(answer)
+      puts "Sorry, invalid choice."
+    end
+    answer
+  end
+
+  def ask_numeric_choice(question, options)
+    answer = nil
+    loop do
+      puts question
+      answer = gets.chomp.to_i
+      break if options.include?(answer)
+      puts "Sorry, that's not a valid choice."
+    end
+    answer
   end
 end
 
@@ -98,27 +162,99 @@ class Square
 end
 
 class Player
-  attr_reader :marker
+  include Questionable
+
+  attr_reader :marker, :name
+  attr_accessor :score
 
   def initialize(marker)
     @marker = marker
+    @score = 0
+  end
+
+  def increment_score
+    self.score += 1
+  end
+
+  def point_string
+    score == 1 ? "point" : "points"
+  end
+end
+
+class Human < Player
+  def initialize(marker)
+    @name = ask_open_question("What's your name?", 15)
+    super
+  end
+end
+
+class Computer < Player
+  def initialize(marker)
+    @name = "Joshua"
+    super
   end
 end
 
 class TTTGame
   include Formattable
+  include Questionable
 
   HUMAN_MARKER = 'X'
   COMPUTER_MARKER = 'O'
   FIRST_TO_MOVE = HUMAN_MARKER
+  WINS_LIMIT = 5
 
   attr_reader :board, :human, :computer
 
   def initialize
     @board = Board.new
-    @human = Player.new(HUMAN_MARKER)
-    @computer = Player.new(COMPUTER_MARKER)
+    @human = Human.new(HUMAN_MARKER)
+    @computer = Computer.new(COMPUTER_MARKER)
     @current_marker = FIRST_TO_MOVE
+  end
+
+  def play
+    clear
+    display_welcome_message
+    main_game
+    display_champion
+    display_goodbye_message
+  end
+
+  private
+
+  def display_welcome_message
+    puts "Hi #{human.name}. Welcome to Tic Tac Toe!"
+    puts "You are playing against #{computer.name}."
+    puts "The first to win 5 games is the Champion!"
+    blank_line
+  end
+
+  def main_game
+    loop do
+      display_board
+      player_move
+      display_result
+      update_score
+      break if match_winner
+      reset
+      display_play_again_message
+    end
+  end
+
+  def display_board
+    display_scores
+    puts "Remember, the first to win 5 games is the Champion!"
+    puts "#{human.name} is an #{human.marker}. " \
+         "#{computer.name} is an #{computer.marker}."
+    blank_line
+    board.draw
+    blank_line
+  end
+
+  def display_scores
+    puts "#{human.name} has #{human.score} #{human.point_string}."
+    puts "#{computer.name} has #{computer.score} #{computer.point_string}."
   end
 
   def player_move
@@ -127,63 +263,6 @@ class TTTGame
       break if board.someone_won? || board.full?
       clear_screen_and_display_board if human_turn?
     end
-  end
-
-  def main_game
-    loop do
-      display_board
-      player_move
-      display_result
-      break unless play_again?
-      reset
-      display_play_again_message
-    end
-  end
-
-  def play
-    clear
-    display_welcome_message
-    main_game
-    display_goodbye_message
-  end
-
-  private
-
-  def display_welcome_message
-    puts "Welcome to Tic Tac Toe!"
-    puts
-  end
-
-  def display_goodbye_message
-    puts "Thanks for playing Tic Tac Toe! Goodbye!"
-    puts
-  end
-
-  def clear_screen_and_display_board
-    clear
-    display_board
-  end
-
-  def display_board
-    puts "You're a #{human.marker}. Computer is a #{computer.marker}."
-    puts ""
-    board.draw
-    puts ""
-  end
-
-  def human_moves
-    puts "Choose a square (#{board.unmarked_keys.join(', ')}):"
-    square = nil
-    loop do
-      square = gets.chomp.to_i
-      break if board.unmarked_keys.include?(square)
-      puts "Sorry, that's not a valid choice."
-    end
-    board[square] = human.marker
-  end
-
-  def computer_moves
-    board[board.unmarked_keys.sample] = computer.marker
   end
 
   def current_player_moves
@@ -200,6 +279,23 @@ class TTTGame
     @current_marker == HUMAN_MARKER
   end
 
+  def human_moves
+    square = ask_numeric_choice(
+      "Choose a square (#{joinor(board.unmarked_keys)}):",
+      board.unmarked_keys
+    )
+    board[square] = human.marker
+  end
+
+  def computer_moves
+    board[board.unmarked_keys.sample] = computer.marker
+  end
+
+  def clear_screen_and_display_board
+    clear
+    display_board
+  end
+
   def display_result
     clear_screen_and_display_board
 
@@ -213,16 +309,30 @@ class TTTGame
     end
   end
 
-  def play_again?
-    answer = nil
-    loop do
-      puts "Would you like to play again? (y/n)"
-      answer = gets.chomp.downcase
-      break if %w(y n).include?(answer)
-      puts "Sorry, must be y or n."
+  def update_score
+    case board.winning_marker
+    when human.marker
+      human.increment_score
+    when computer.marker
+      computer.increment_score
     end
+  end
 
-    answer == 'y'
+  def match_winner
+    if human.score == 5
+      human
+    elsif computer.score == 5
+      computer
+    end
+    nil
+  end
+
+  def display_champion
+    puts "#{match_winner} won 5 games and is the CHAMPION!"
+  end
+
+  def play_again?
+    ask_yes_no_question("Would you like to play again? (y/n)")
   end
 
   def reset
@@ -233,6 +343,11 @@ class TTTGame
 
   def display_play_again_message
     puts "Let's play again!"
+    puts
+  end
+
+  def display_goodbye_message
+    puts "Thanks for playing Tic Tac Toe! Goodbye!"
     puts
   end
 end
