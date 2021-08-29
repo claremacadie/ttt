@@ -138,9 +138,8 @@ class Board
   def computer_offense_move
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
-      if at_risk_square?(squares, TTTGame::COMPUTER_MARKER)
-        return empty_square(squares)
-      end
+      square = find_at_risk_square(squares, TTTGame::COMPUTER_MARKER)
+      return square if square
     end
     nil
   end
@@ -148,18 +147,13 @@ class Board
   def computer_defense_move
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
-      if at_risk_square?(squares, TTTGame::HUMAN_MARKER)
-        return empty_square(squares)
-      end
+      square = find_at_risk_square(squares, TTTGame::HUMAN_MARKER)
+      return square if square
     end
     nil
   end
 
   private
-
-  def empty_square(squares)
-    squares.select { |square| square.unmarked? }.first
-  end
 
   def three_identical_markers?(squares)
     markers = squares.select(&:marked?).map(&:marker)
@@ -169,14 +163,16 @@ class Board
     markers.uniq.size == 1
   end
 
-  def at_risk_square?(squares, marker_type)
+  def find_at_risk_square(squares, marker_type)
     markers = squares.select(&:marked?).map(&:marker)
-    markers.count(marker_type) == 2 && empty_square(squares)
+    if markers.count(marker_type) == 2 && empty_square(squares)
+      return empty_square(squares)
+    end
+    nil
   end
 
-  def two_identical_markers?(squares, marker_type)
-    markers = squares.select(&:marked?).map(&:marker)
-    markers.count(marker_type) == 2
+  def empty_square(squares)
+    squares.select { |square| square.unmarked? }.first
   end
 end
 
@@ -340,6 +336,17 @@ class TTTGame
     else
       board[board.unmarked_keys.sample] = computer.marker
     end
+    # square = if board.computer_offense_move
+    #           board.computer_offense_move.marker
+    #         elsif board.computer_defense_move
+    #           board.computer_defense_move.marker
+    #         elsif board[CENTER_SQUARE].unmarked?
+    #           board[CENTER_SQUARE]
+    #         else
+    #           board[board.unmarked_keys.sample]
+    #         end
+    #         gets
+    # square = computer.marker
   end
 
   def clear_screen_and_display_board
