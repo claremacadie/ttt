@@ -5,7 +5,7 @@ module Formattable
   end
 
   def clear
-    # system('clear')
+    system('clear')
   end
 
   def blank_line
@@ -85,6 +85,10 @@ class Board
 
   def []=(num, marker)
     @squares[num].marker = marker
+  end
+
+  def [](num)
+    @squares[num]
   end
 
   def unmarked_keys
@@ -202,11 +206,13 @@ class TTTGame
   HUMAN_MARKER = 'X'
   COMPUTER_MARKER = 'O'
   FIRST_TO_MOVE = HUMAN_MARKER
+  CENTER_SQUARE = 5
   WINS_LIMIT = 5
 
   attr_reader :board, :human, :computer
 
   def initialize
+    clear
     @board = Board.new
     @human = Human.new(HUMAN_MARKER)
     @computer = Computer.new(COMPUTER_MARKER)
@@ -224,6 +230,7 @@ class TTTGame
   private
 
   def display_welcome_message
+    clear
     puts "Hi #{human.name}. Welcome to Tic Tac Toe!"
     puts "You are playing against #{computer.name}."
     puts "The first to win 5 games is the Champion!"
@@ -234,8 +241,9 @@ class TTTGame
     loop do
       display_board
       player_move
-      display_result
       update_score
+      display_result
+      display_scores
       break if match_winner
       reset
       display_play_again_message
@@ -243,10 +251,8 @@ class TTTGame
   end
 
   def display_board
-    display_scores
-    puts "Remember, the first to win 5 games is the Champion!"
     puts "#{human.name} is an #{human.marker}. " \
-         "#{computer.name} is an #{computer.marker}."
+        "#{computer.name} is an #{computer.marker}."
     blank_line
     board.draw
     blank_line
@@ -255,6 +261,7 @@ class TTTGame
   def display_scores
     puts "#{human.name} has #{human.score} #{human.point_string}."
     puts "#{computer.name} has #{computer.score} #{computer.point_string}."
+    puts "Remember, the first to win 5 games is the Champion!"
   end
 
   def player_move
@@ -288,7 +295,11 @@ class TTTGame
   end
 
   def computer_moves
-    board[board.unmarked_keys.sample] = computer.marker
+    if board[CENTER_SQUARE].marker == Square::INITIAL_MARKER
+      board[CENTER_SQUARE] = computer.marker
+    else
+      board[board.unmarked_keys.sample] = computer.marker
+    end
   end
 
   def clear_screen_and_display_board
@@ -301,9 +312,9 @@ class TTTGame
 
     case board.winning_marker
     when human.marker
-      puts 'You won!'
+      puts "#{human.name} won!"
     when computer.marker
-      puts 'I won!'
+      puts "#{computer.name} won!"
     else
       puts "It's a tie!"
     end
@@ -332,18 +343,20 @@ class TTTGame
   end
 
   def play_again?
-    ask_yes_no_question("Would you like to play again? (y/n)")
+    ask_yes_no_question("Would you like to play another match? (y/n)")
   end
 
   def reset
     board.reset
     @current_marker = FIRST_TO_MOVE
-    clear
+    # clear
   end
 
   def display_play_again_message
-    puts "Let's play again!"
     puts
+    puts "Press enter to continue the match."
+    gets
+    clear
   end
 
   def display_goodbye_message
