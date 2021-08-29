@@ -91,28 +91,6 @@ class Board
     @squares[num]
   end
 
-  def unmarked_keys
-    @squares.select { |_, sq| sq.unmarked? }.keys
-  end
-
-  def full?
-    unmarked_keys.empty?
-  end
-
-  def someone_won?
-    !!winning_marker
-  end
-
-  def winning_marker
-    WINNING_LINES.each do |line|
-      squares = @squares.values_at(*line)
-      if three_identical_markers?(squares)
-        return squares.first.marker
-      end
-    end
-    nil
-  end
-
   def reset
     (1..9).each { |key| @squares[key] = Square.new }
   end
@@ -134,6 +112,28 @@ class Board
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
+
+  def unmarked_keys
+    @squares.select { |_, sq| sq.unmarked? }.keys
+  end
+
+  def full?
+    unmarked_keys.empty?
+  end
+
+  def someone_won?
+    !!winning_marker
+  end
+
+  def winning_marker
+    WINNING_LINES.each do |line|
+      squares = @squares.values_at(*line)
+      if three_identical_markers?(squares)
+        return squares.first.marker
+      end
+    end
+    nil
+  end
 
   private
 
