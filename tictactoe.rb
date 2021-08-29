@@ -92,7 +92,7 @@ class Board
   end
 
   def reset
-    (1..9).each { |key| @squares[key] = Square.new(key)}
+    (1..9).each { |key| @squares[key] = Square.new}
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -135,15 +135,21 @@ class Board
     nil
   end
 
-  def computer_stategic_move
+  def computer_offense_move
     WINNING_LINES.each do |line|
-    squares = @squares.values_at(*line)
-      if two_identical_markers?(squares, TTTGame::COMPUTER_MARKER) &&
-        squares.select { |square| square.unmarked? }[0]
-        return squares.select { |square| square.unmarked? }[0]
-      elsif two_identical_markers?(squares, TTTGame::HUMAN_MARKER) &&
-        squares.select { |square| square.unmarked? }[0]
-        return squares.select { |square| square.unmarked? }[0]
+      squares = @squares.values_at(*line)
+      if at_risk_square?(squares, TTTGame::COMPUTER_MARKER)
+        return empty_square(squares)
+      end
+    end
+    nil
+  end
+
+  def computer_defense_move
+    WINNING_LINES.each do |line|
+      squares = @squares.values_at(*line)
+      if at_risk_square?(squares, TTTGame::HUMAN_MARKER)
+        return empty_square(squares)
       end
     end
     nil
@@ -151,12 +157,21 @@ class Board
 
   private
 
+  def empty_square(squares)
+    squares.select { |square| square.unmarked? }.first
+  end
+
   def three_identical_markers?(squares)
     markers = squares.select(&:marked?).map(&:marker)
     # marked_squares = squares.select { |square| square.marked? }
     # markers = marked_squares.map { |square| square.marker }
     return false if markers.size != 3
     markers.uniq.size == 1
+  end
+
+  def at_risk_square?(squares, marker_type)
+    markers = squares.select(&:marked?).map(&:marker)
+    markers.count(marker_type) == 2 && empty_square(squares)
   end
 
   def two_identical_markers?(squares, marker_type)
@@ -168,10 +183,8 @@ end
 class Square
   INITIAL_MARKER = " "
   attr_accessor :marker
-  attr_reader :position
 
-  def initialize(position, marker = INITIAL_MARKER)
-    @position = position
+  def initialize(marker = INITIAL_MARKER)
     @marker = marker
   end
 
@@ -318,9 +331,11 @@ class TTTGame
   end
 
   def computer_moves
-    if board.computer_stategic_move
-      board[board.computer_stategic_move.position] = computer.marker
-    elsif board[CENTER_SQUARE].marker == Square::INITIAL_MARKER
+    if board.computer_offense_move
+      board.computer_offense_move.marker = computer.marker
+    elsif board.computer_defense_move
+      board.computer_defense_move.marker = computer.marker
+    elsif board[CENTER_SQUARE].unmarked?
       board[CENTER_SQUARE] = computer.marker
     else
       board[board.unmarked_keys.sample] = computer.marker
