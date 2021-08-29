@@ -92,7 +92,7 @@ class Board
   end
 
   def reset
-    (1..9).each { |key| @squares[key] = Square.new }
+    (1..9).each { |key| @squares[key] = Square.new(key)}
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -135,7 +135,24 @@ class Board
     nil
   end
 
+  def computer_defense_move
+    WINNING_LINES.each do |line|
+      squares = @squares.values_at(*line)
+      if two_human_markers?(squares) &&
+        squares.select { |square| square.unmarked? }[0]
+        return squares.select { |square| square.unmarked? }[0]
+      end
+    end
+    nil
+  end
+
   private
+
+  def two_human_markers?(squares)
+    marked_squares = squares.select { |square| square.marked? }
+    markers = marked_squares.map { |square| square.marker }
+    markers.count(TTTGame::HUMAN_MARKER) == 2
+  end
 
   def three_identical_markers?(squares)
     # markers = squares.select(&:marked?).collect(&:marker)
@@ -149,8 +166,10 @@ end
 class Square
   INITIAL_MARKER = " "
   attr_accessor :marker
+  attr_reader :position
 
-  def initialize(marker = INITIAL_MARKER)
+  def initialize(position, marker = INITIAL_MARKER)
+    @position = position
     @marker = marker
   end
 
@@ -297,7 +316,9 @@ class TTTGame
   end
 
   def computer_moves
-    if board[CENTER_SQUARE].marker == Square::INITIAL_MARKER
+    if board.computer_defense_move
+      board[board.computer_defense_move.position] = computer.marker
+    elsif board[CENTER_SQUARE].marker == Square::INITIAL_MARKER
       board[CENTER_SQUARE] = computer.marker
     else
       board[board.unmarked_keys.sample] = computer.marker
