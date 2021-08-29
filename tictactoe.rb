@@ -138,7 +138,9 @@ class Board
   private
 
   def three_identical_markers?(squares)
-    markers = squares.select(&:marked?).collect(&:marker)
+    # markers = squares.select(&:marked?).collect(&:marker)
+    marked_squares = squares.select { |square| square.marked? }
+    markers = marked_squares.map { |square| square.marker }
     return false if markers.size != 3
     markers.uniq.size == 1
   end
