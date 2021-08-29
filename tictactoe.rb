@@ -135,6 +135,17 @@ class Board
     nil
   end
 
+  def computer_offense_move
+    WINNING_LINES.each do |line|
+      squares = @squares.values_at(*line)
+      if two_computer_markers?(squares) &&
+        squares.select { |square| square.unmarked? }[0]
+        return squares.select { |square| square.unmarked? }[0]
+      end
+    end
+    nil
+  end
+
   def computer_defense_move
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
@@ -148,18 +159,24 @@ class Board
 
   private
 
-  def two_human_markers?(squares)
-    marked_squares = squares.select { |square| square.marked? }
-    markers = marked_squares.map { |square| square.marker }
-    markers.count(TTTGame::HUMAN_MARKER) == 2
-  end
-
   def three_identical_markers?(squares)
     # markers = squares.select(&:marked?).collect(&:marker)
     marked_squares = squares.select { |square| square.marked? }
     markers = marked_squares.map { |square| square.marker }
     return false if markers.size != 3
     markers.uniq.size == 1
+  end
+
+  def two_computer_markers?(squares)
+    marked_squares = squares.select { |square| square.marked? }
+    markers = marked_squares.map { |square| square.marker }
+    markers.count(TTTGame::COMPUTER_MARKER) == 2
+  end
+
+  def two_human_markers?(squares)
+    marked_squares = squares.select { |square| square.marked? }
+    markers = marked_squares.map { |square| square.marker }
+    markers.count(TTTGame::HUMAN_MARKER) == 2
   end
 end
 
@@ -316,7 +333,9 @@ class TTTGame
   end
 
   def computer_moves
-    if board.computer_defense_move
+    if board.computer_offense_move
+      board[board.computer_offense_move.position] = computer.marker
+    elsif board.computer_defense_move
       board[board.computer_defense_move.position] = computer.marker
     elsif board[CENTER_SQUARE].marker == Square::INITIAL_MARKER
       board[CENTER_SQUARE] = computer.marker
