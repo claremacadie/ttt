@@ -70,6 +70,7 @@ module Questionable
 end
 
 class Board
+  attr_accessor :human_marker, :computer_marker
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
                   [[2, 5, 8], [1, 4, 7], [3, 6, 9]] +
                   [[1, 5, 9], [3, 5, 7]]
@@ -132,11 +133,11 @@ class Board
     nil
   end
 
-  def find_best_square(human_marker, computer_marker)
-    if computer_offense_move(computer_marker)
-      computer_offense_move(computer_marker)
-    elsif computer_defense_move(human_marker)
-      computer_defense_move(human_marker)
+  def find_best_square
+    if computer_offense_move
+      computer_offense_move
+    elsif computer_defense_move
+      computer_defense_move
     elsif self[CENTER_SQUARE].unmarked?
       self[CENTER_SQUARE]
     else
@@ -152,11 +153,11 @@ class Board
     markers.uniq.size == 1
   end
 
-  def computer_offense_move(computer_marker)
+  def computer_offense_move
     computer_strategic_move(computer_marker)
   end
 
-  def computer_defense_move(human_marker)
+  def computer_defense_move
     computer_strategic_move(human_marker)
   end
 
@@ -277,8 +278,8 @@ class TTTGame
   end
 
   def main_game
-    decide_player_markers
     loop do
+      decide_player_markers
       display_board
       player_move
       update_score
@@ -298,16 +299,19 @@ class TTTGame
   end
 
   def assign_player_markers(human_marker_choice)
-    if human_marker_choice == 'o'
+    if human_marker_choice.upcase == 'O'
       human.marker = 'O'
       computer.marker = 'X'
     else
       human.marker = 'X'
       computer.marker = 'O'
     end
+    board.human_marker = human.marker
+    board.computer_marker = computer.marker
   end
 
   def display_board
+    clear
     puts "#{human.name} is an #{human.marker}. " \
         "#{computer.name} is an #{computer.marker}."
     blank_line
@@ -370,8 +374,7 @@ class TTTGame
   end
 
   def computer_moves
-    square = board.find_best_square(human.marker, computer.marker)
-    square.marker = computer.marker
+    board.find_best_square.marker = computer.marker
   end
 
   def clear_screen_and_display_board
