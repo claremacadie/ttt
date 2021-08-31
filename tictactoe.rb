@@ -34,13 +34,13 @@ module Questionable
     answer[0] == 'y'
   end
 
-  def ask_open_question(question, char_limit = 0)
+  def ask_open_question(question)
     answer = nil
     loop do
       puts question
       answer = gets.chomp.strip
-      break unless answer.empty? || answer.size > char_limit
-      puts "Sorry, must enter a value and it must be less than 15 characters."
+      break unless answer.empty?
+      puts "Sorry, must enter a value."
     end
     answer
   end
@@ -61,7 +61,7 @@ module Questionable
     answer = nil
     loop do
       puts question
-      answer = gets.chomp.to_i
+      answer = gets.chomp.strip.to_i
       break if options.include?(answer)
       puts "Sorry, that's not a valid choice."
     end
@@ -224,7 +224,7 @@ end
 
 class Human < Player
   def initialize
-    @name = ask_open_question("What's your name?", 15)
+    @name = ask_open_question("What's your name?")
     super
   end
 end
