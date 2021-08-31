@@ -73,6 +73,7 @@ class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
                   [[2, 5, 8], [1, 4, 7], [3, 6, 9]] +
                   [[1, 5, 9], [3, 5, 7]]
+  CENTER_SQUARE = 5
 
   def initialize
     @squares = {}
@@ -131,6 +132,20 @@ class Board
     nil
   end
 
+  def find_best_square
+    if computer_offense_move
+      computer_offense_move
+    elsif computer_defense_move
+      computer_defense_move
+    elsif self[CENTER_SQUARE].unmarked?
+      self[CENTER_SQUARE]
+    else
+      self[unmarked_keys.sample]
+    end
+  end
+
+  private
+
   def computer_offense_move
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
@@ -148,8 +163,6 @@ class Board
     end
     nil
   end
-
-  private
 
   def three_identical_markers?(squares)
     markers = squares.select(&:marked?).map(&:marker)
@@ -340,15 +353,7 @@ class TTTGame
   end
 
   def computer_moves
-    if board.computer_offense_move
-      board.computer_offense_move.marker = computer.marker
-    elsif board.computer_defense_move
-      board.computer_defense_move.marker = computer.marker
-    elsif board[CENTER_SQUARE].unmarked?
-      board[CENTER_SQUARE] = computer.marker
-    else
-      board[board.unmarked_keys.sample] = computer.marker
-    end
+    board.find_best_square.marker = computer.marker
   end
 
   def clear_screen_and_display_board
