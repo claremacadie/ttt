@@ -1,9 +1,5 @@
 # tictactoe.rb
 module Formattable
-  def break_line
-    puts "------------------------------------------------------------------"
-  end
-
   def clear
     system('clear')
   end
@@ -92,7 +88,7 @@ class Board
   end
 
   def reset
-    (1..9).each { |key| @squares[key] = Square.new}
+    (1..9).each { |key| @squares[key] = Square.new }
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -172,7 +168,7 @@ class Board
   end
 
   def empty_square(squares)
-    squares.select { |square| square.unmarked? }.first
+    squares.select(&:unmarked?).first
   end
 end
 
@@ -254,8 +250,13 @@ class TTTGame
   def play
     clear
     display_welcome_message
-    main_game
-    display_champion
+    loop do
+      main_game
+      display_champion if match_winner
+      break unless play_again?
+      reset_match
+      display_rematch_message
+    end
     display_goodbye_message
   end
 
@@ -274,11 +275,10 @@ class TTTGame
       display_board
       player_move
       update_score
-      display_result
       display_scores
       break if match_winner
-      reset
-      display_play_again_message
+      reset_board
+      break unless continue_match_message
     end
   end
 
@@ -290,10 +290,23 @@ class TTTGame
     blank_line
   end
 
+  def display_result
+    clear_screen_and_display_board
+
+    case board.winning_marker
+    when human.marker
+      puts "#{human.name} won!"
+    when computer.marker
+      puts "#{computer.name} won!"
+    else
+      puts "It's a tie!"
+    end
+  end
+
   def display_scores
+    puts "Remember, the first to win 5 games is the Champion!"
     puts "#{human.name} has #{human.score} #{human.point_string}."
     puts "#{computer.name} has #{computer.score} #{computer.point_string}."
-    puts "Remember, the first to win 5 games is the Champion!"
   end
 
   def player_move
@@ -336,35 +349,11 @@ class TTTGame
     else
       board[board.unmarked_keys.sample] = computer.marker
     end
-    # square = if board.computer_offense_move
-    #           board.computer_offense_move.marker
-    #         elsif board.computer_defense_move
-    #           board.computer_defense_move.marker
-    #         elsif board[CENTER_SQUARE].unmarked?
-    #           board[CENTER_SQUARE]
-    #         else
-    #           board[board.unmarked_keys.sample]
-    #         end
-    #         gets
-    # square = computer.marker
   end
 
   def clear_screen_and_display_board
     clear
     display_board
-  end
-
-  def display_result
-    clear_screen_and_display_board
-
-    case board.winning_marker
-    when human.marker
-      puts "#{human.name} won!"
-    when computer.marker
-      puts "#{computer.name} won!"
-    else
-      puts "It's a tie!"
-    end
   end
 
   def update_score
@@ -377,37 +366,54 @@ class TTTGame
   end
 
   def match_winner
-    if human.score == 5
+    if human.score == WINS_LIMIT
       human
-    elsif computer.score == 5
+    elsif computer.score == WINS_LIMIT
       computer
     end
-    nil
   end
 
   def display_champion
-    puts "#{match_winner} won 5 games and is the CHAMPION!"
+    blank_line
+    puts "#{match_winner.name} won 5 games and is the CHAMPION!"
+    blank_line
   end
 
   def play_again?
     ask_yes_no_question("Would you like to play another match? (y/n)")
   end
 
-  def reset
+  def reset_board
     board.reset
     @current_marker = FIRST_TO_MOVE
-    # clear
   end
 
-  def display_play_again_message
-    puts
-    puts "Press enter to continue the match."
-    gets
+  def continue_match_message
+    blank_line
+    answer = ask_closed_question(
+      "Press enter to continue the match (or 'q' to quit this match).",
+      ["", "q"]
+    )
     clear
+    answer.empty? ? true : false
+  end
+
+  def display_rematch_message
+    clear
+    puts "Hi #{human.name}. Welcome back to Tic Tac Toe!"
+    puts "You are playing against #{computer.name}."
+    puts "Remember, the first to win 5 games is the Champion!"
+    blank_line
+  end
+
+  def reset_match
+    reset_board
+    human.score = 0
+    computer.score = 0
   end
 
   def display_goodbye_message
-    puts "Thanks for playing Tic Tac Toe! Goodbye!"
+    puts "Thank you for playing Tic Tac Toe! Goodbye!"
     puts
   end
 end
