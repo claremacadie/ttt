@@ -70,11 +70,12 @@ module Questionable
 end
 
 class Board
-  attr_accessor :human_marker, :computer_marker
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
                   [[2, 5, 8], [1, 4, 7], [3, 6, 9]] +
                   [[1, 5, 9], [3, 5, 7]]
   CENTER_SQUARE = 5
+
+  attr_accessor :human_marker, :computer_marker
 
   def initialize
     @squares = {}
@@ -185,6 +186,7 @@ end
 
 class Square
   INITIAL_MARKER = " "
+
   attr_accessor :marker
 
   def initialize(marker = INITIAL_MARKER)
@@ -271,9 +273,11 @@ class TTTGame
 
   def display_welcome_message
     clear
-    puts "Hi #{human.name}. Welcome to Tic Tac Toe!"
-    puts "You are playing against #{computer.name}."
-    puts "The first to win 5 games is the Champion!"
+    puts <<~WELCOME
+    Hi #{human.name}. Welcome to Tic Tac Toe!
+    You are playing against #{computer.name}.
+    The first to win 5 games is the Champion!
+    WELCOME
     blank_line
   end
 
@@ -338,9 +342,11 @@ class TTTGame
   end
 
   def display_scores
-    puts "Remember, the first to win 5 games is the Champion!"
-    puts "#{human.name} has #{human.score} #{human.point_string}."
-    puts "#{computer.name} has #{computer.score} #{computer.point_string}."
+    puts <<~SCORES
+    Remember, the first to win 5 games is the Champion!
+    #{human.name} has #{human.score} #{human.point_string}.
+    #{computer.name} has #{computer.score} #{computer.point_string}.
+    SCORES
   end
 
   def player_move
@@ -426,9 +432,11 @@ class TTTGame
 
   def display_rematch_message
     clear
-    puts "Hi #{human.name}. Welcome back to Tic Tac Toe!"
-    puts "You are playing against #{computer.name}."
-    puts "Remember, the first to win 5 games is the Champion!"
+    puts <<~REMATCH
+    Hi #{human.name}. Welcome back to Tic Tac Toe!
+    You are playing against #{computer.name}.
+    Remember, the first to win 5 games is the Champion!
+    REMATCH
     blank_line
   end
 
@@ -440,7 +448,7 @@ class TTTGame
 
   def display_goodbye_message
     puts "Thank you for playing Tic Tac Toe! Goodbye!"
-    puts
+    blank_line
   end
 end
 
