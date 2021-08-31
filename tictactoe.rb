@@ -146,28 +146,27 @@ class Board
 
   private
 
-  def computer_offense_move
-    WINNING_LINES.each do |line|
-      squares = @squares.values_at(*line)
-      square = find_at_risk_square(squares, TTTGame::COMPUTER_MARKER)
-      return square if square
-    end
-    nil
-  end
-
-  def computer_defense_move
-    WINNING_LINES.each do |line|
-      squares = @squares.values_at(*line)
-      square = find_at_risk_square(squares, TTTGame::HUMAN_MARKER)
-      return square if square
-    end
-    nil
-  end
-
   def three_identical_markers?(squares)
     markers = squares.select(&:marked?).map(&:marker)
     return false if markers.size != 3
     markers.uniq.size == 1
+  end
+
+  def computer_offense_move
+    computer_strategic_move(TTTGame::COMPUTER_MARKER)
+  end
+
+  def computer_defense_move
+    computer_strategic_move(TTTGame::HUMAN_MARKER)
+  end
+
+  def computer_strategic_move(marker)
+    WINNING_LINES.each do |line|
+      squares = @squares.values_at(*line)
+      square = find_at_risk_square(squares, marker)
+      return square if square
+    end
+    nil
   end
 
   def find_at_risk_square(squares, marker_type)
