@@ -75,6 +75,96 @@ module Questionable
   end
 end
 
+module Displayable
+  include Formattable
+
+  def display_welcome_message
+    clear
+    puts <<~WELCOME
+    Hi #{human.name}. Welcome to Tic Tac Toe!
+    You are playing against #{computer.name}.
+    The first to win #{TTTGame::WINS_LIMIT} games is the Champion!
+    WELCOME
+    blank_line
+  end
+
+
+  def display_result_and_scores
+    display_result
+    display_scores
+  end
+
+  def display_result
+    clear_screen_and_display_board
+
+    case board.winning_marker
+    when human.marker
+      puts "#{human.name} won!"
+    when computer.marker
+      puts "#{computer.name} won!"
+    else
+      puts "It's a tie!"
+    end
+  end
+
+  def display_scores
+    puts <<~SCORES
+    Remember, the first to win 5 games is the Champion!
+    #{human.name} has #{human.score} #{human.point_string}.
+    #{computer.name} has #{computer.score} #{computer.point_string}.
+    SCORES
+  end
+
+  def display_board
+    clear
+    puts "#{human.name} is an #{human.marker}. " \
+        "#{computer.name} is an #{computer.marker}."
+    blank_line
+    board.draw
+    blank_line
+  end
+
+  def clear_screen_and_display_board
+    clear
+    display_board
+  end
+
+  def display_champion
+    blank_line
+    puts "#{match_winner.name} won 5 games and is the CHAMPION!"
+    blank_line
+  end
+
+  def play_again?
+    ask_yes_no_question("Would you like to play another match? (y/n)")
+  end
+
+  def continue_match_message
+    blank_line
+    answer = ask_closed_question(
+      "Press enter to continue the match (or 'q' to quit this match).",
+      ["", "q"]
+    )
+    clear
+    answer.empty? ? true : false
+  end
+
+  def display_rematch_message
+    clear
+    puts <<~REMATCH
+    Hi #{human.name}. Welcome back to Tic Tac Toe!
+    You are playing against #{computer.name}.
+    Remember, the first to win #{TTTGame::WINS_LIMIT} games is the Champion!
+    REMATCH
+    blank_line
+  end
+
+  def display_goodbye_message
+    puts "Thank you for playing Tic Tac Toe! Goodbye!"
+    blank_line
+  end
+end
+
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
                   [[2, 5, 8], [1, 4, 7], [3, 6, 9]] +
@@ -248,8 +338,8 @@ class Computer < Player
 end
 
 class TTTGame
-  include Formattable
   include Questionable
+  include Displayable
 
   FIRST_TO_MOVE = 'X'
   WINS_LIMIT = 5
@@ -279,15 +369,6 @@ class TTTGame
 
   private
 
-  def display_welcome_message
-    clear
-    puts <<~WELCOME
-    Hi #{human.name}. Welcome to Tic Tac Toe!
-    You are playing against #{computer.name}.
-    The first to win 5 games is the Champion!
-    WELCOME
-    blank_line
-  end
 
   def main_game
     loop do
@@ -320,41 +401,6 @@ class TTTGame
     end
     board.human_marker = human.marker
     board.computer_marker = computer.marker
-  end
-
-  def display_board
-    clear
-    puts "#{human.name} is an #{human.marker}. " \
-        "#{computer.name} is an #{computer.marker}."
-    blank_line
-    board.draw
-    blank_line
-  end
-
-  def display_result_and_scores
-    display_result
-    display_scores
-  end
-
-  def display_result
-    clear_screen_and_display_board
-
-    case board.winning_marker
-    when human.marker
-      puts "#{human.name} won!"
-    when computer.marker
-      puts "#{computer.name} won!"
-    else
-      puts "It's a tie!"
-    end
-  end
-
-  def display_scores
-    puts <<~SCORES
-    Remember, the first to win 5 games is the Champion!
-    #{human.name} has #{human.score} #{human.point_string}.
-    #{computer.name} has #{computer.score} #{computer.point_string}.
-    SCORES
   end
 
   def player_move
@@ -391,11 +437,6 @@ class TTTGame
     board.find_best_square.marker = computer.marker
   end
 
-  def clear_screen_and_display_board
-    clear
-    display_board
-  end
-
   def update_score
     case board.winning_marker
     when human.marker
@@ -413,50 +454,15 @@ class TTTGame
     end
   end
 
-  def display_champion
-    blank_line
-    puts "#{match_winner.name} won 5 games and is the CHAMPION!"
-    blank_line
-  end
-
-  def play_again?
-    ask_yes_no_question("Would you like to play another match? (y/n)")
-  end
-
   def reset_board
     board.reset
     @current_marker = FIRST_TO_MOVE
-  end
-
-  def continue_match_message
-    blank_line
-    answer = ask_closed_question(
-      "Press enter to continue the match (or 'q' to quit this match).",
-      ["", "q"]
-    )
-    clear
-    answer.empty? ? true : false
-  end
-
-  def display_rematch_message
-    clear
-    puts <<~REMATCH
-    Hi #{human.name}. Welcome back to Tic Tac Toe!
-    You are playing against #{computer.name}.
-    Remember, the first to win 5 games is the Champion!
-    REMATCH
-    blank_line
   end
 
   def reset_match
     reset_board
     human.score = 0
     computer.score = 0
-  end
-
-  def display_goodbye_message
-    puts "Thank you for playing Tic Tac Toe! Goodbye!"
-    blank_line
   end
 end
 
