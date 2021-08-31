@@ -21,6 +21,8 @@ module Formattable
 end
 
 module Questionable
+  include Formattable
+
   YES_NO_OPTIONS = %w(y yes n no)
 
   def ask_yes_no_question(question)
@@ -30,17 +32,19 @@ module Questionable
       answer = gets.chomp.downcase.strip
       break if YES_NO_OPTIONS.include? answer
       puts "Sorry, must be y or n."
+      blank_line
     end
     answer[0] == 'y'
   end
 
-  def ask_open_question(question)
+  def ask_open_question(question, void_answer)
     answer = nil
     loop do
       puts question
       answer = gets.chomp.strip
-      break unless answer.empty?
-      puts "Sorry, must enter a value."
+      break unless answer.empty? || answer == void_answer
+      puts "Sorry, must enter a value (it can't be '#{void_answer}'!)."
+      blank_line
     end
     answer
   end
@@ -53,6 +57,7 @@ module Questionable
       answer = gets.chomp.downcase.strip
       break if downcase_options.include?(answer)
       puts "Sorry, invalid choice."
+      blank_line
     end
     answer
   end
@@ -64,6 +69,7 @@ module Questionable
       answer = gets.chomp.strip.to_i
       break if options.include?(answer)
       puts "Sorry, that's not a valid choice."
+      blank_line
     end
     answer
   end
@@ -209,6 +215,8 @@ end
 class Player
   include Questionable
 
+  COMPUTER_NAME = "Joshua"
+
   attr_reader :name
   attr_accessor :score, :marker
 
@@ -227,14 +235,14 @@ end
 
 class Human < Player
   def initialize
-    @name = ask_open_question("What's your name?")
+    @name = ask_open_question("What's your name?", COMPUTER_NAME)
     super
   end
 end
 
 class Computer < Player
   def initialize
-    @name = "Joshua"
+    @name = COMPUTER_NAME
     super
   end
 end
