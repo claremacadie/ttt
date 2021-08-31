@@ -132,11 +132,11 @@ class Board
     nil
   end
 
-  def find_best_square
-    if computer_offense_move
-      computer_offense_move
-    elsif computer_defense_move
-      computer_defense_move
+  def find_best_square(human_marker, computer_marker)
+    if computer_offense_move(computer_marker)
+      computer_offense_move(computer_marker)
+    elsif computer_defense_move(human_marker)
+      computer_defense_move(human_marker)
     elsif self[CENTER_SQUARE].unmarked?
       self[CENTER_SQUARE]
     else
@@ -152,12 +152,12 @@ class Board
     markers.uniq.size == 1
   end
 
-  def computer_offense_move
-    computer_strategic_move(TTTGame::COMPUTER_MARKER)
+  def computer_offense_move(computer_marker)
+    computer_strategic_move(computer_marker)
   end
 
-  def computer_defense_move
-    computer_strategic_move(TTTGame::HUMAN_MARKER)
+  def computer_defense_move(human_marker)
+    computer_strategic_move(human_marker)
   end
 
   def computer_strategic_move(marker)
@@ -206,11 +206,10 @@ end
 class Player
   include Questionable
 
-  attr_reader :marker, :name
-  attr_accessor :score
+  attr_reader :name
+  attr_accessor :score, :marker
 
-  def initialize(marker)
-    @marker = marker
+  def initialize
     @score = 0
   end
 
@@ -224,14 +223,14 @@ class Player
 end
 
 class Human < Player
-  def initialize(marker)
+  def initialize
     @name = ask_open_question("What's your name?", 15)
     super
   end
 end
 
 class Computer < Player
-  def initialize(marker)
+  def initialize
     @name = "Joshua"
     super
   end
@@ -241,10 +240,7 @@ class TTTGame
   include Formattable
   include Questionable
 
-  HUMAN_MARKER = 'X'
-  COMPUTER_MARKER = 'O'
-  FIRST_TO_MOVE = HUMAN_MARKER
-  CENTER_SQUARE = 5
+  FIRST_TO_MOVE = 'X'
   WINS_LIMIT = 5
 
   attr_reader :board, :human, :computer
@@ -252,8 +248,8 @@ class TTTGame
   def initialize
     clear
     @board = Board.new
-    @human = Human.new(HUMAN_MARKER)
-    @computer = Computer.new(COMPUTER_MARKER)
+    @human = Human.new
+    @computer = Computer.new
     @current_marker = FIRST_TO_MOVE
   end
 
@@ -281,15 +277,33 @@ class TTTGame
   end
 
   def main_game
+    decide_player_markers
     loop do
       display_board
       player_move
       update_score
-      display_result
-      display_scores
+      display_result_and_scores
       break if match_winner
       reset_board
       break unless continue_match_message
+    end
+  end
+
+  def decide_player_markers
+    human_marker_choice = ask_closed_question(
+      "'X' goes first. Would you like to be 'X' or 'O'?",
+      ['x', 'o']
+    )
+    assign_player_markers(human_marker_choice)
+  end
+
+  def assign_player_markers(human_marker_choice)
+    if human_marker_choice == 'o'
+      human.marker = 'O'
+      computer.marker = 'X'
+    else
+      human.marker = 'X'
+      computer.marker = 'O'
     end
   end
 
@@ -299,6 +313,11 @@ class TTTGame
     blank_line
     board.draw
     blank_line
+  end
+
+  def display_result_and_scores
+    display_result
+    display_scores
   end
 
   def display_result
@@ -331,15 +350,15 @@ class TTTGame
   def current_player_moves
     if human_turn?
       human_moves
-      @current_marker = COMPUTER_MARKER
+      @current_marker = computer.marker
     else
       computer_moves
-      @current_marker = HUMAN_MARKER
+      @current_marker = human.marker
     end
   end
 
   def human_turn?
-    @current_marker == HUMAN_MARKER
+    @current_marker == human.marker
   end
 
   def human_moves
@@ -351,7 +370,8 @@ class TTTGame
   end
 
   def computer_moves
-    board.find_best_square.marker = computer.marker
+    square = board.find_best_square(human.marker, computer.marker)
+    square.marker = computer.marker
   end
 
   def clear_screen_and_display_board
