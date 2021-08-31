@@ -296,7 +296,7 @@ class TTTGame
 
   def decide_player_markers
     human_marker_choice = ask_closed_question(
-      "'X' goes first. Would you like to be 'X' or 'O'?",
+      "#{FIRST_TO_MOVE} goes first. Would you like to be 'X' or 'O'?",
       ['x', 'o']
     )
     assign_player_markers(human_marker_choice)
