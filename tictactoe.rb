@@ -166,8 +166,6 @@ class Board
 
   def three_identical_markers?(squares)
     markers = squares.select(&:marked?).map(&:marker)
-    # marked_squares = squares.select { |square| square.marked? }
-    # markers = marked_squares.map { |square| square.marker }
     return false if markers.size != 3
     markers.uniq.size == 1
   end
@@ -288,6 +286,7 @@ class TTTGame
       display_board
       player_move
       update_score
+      display_result
       display_scores
       break if match_winner
       reset_board
