@@ -320,6 +320,14 @@ class Player
   def point_string
     score == 1 ? "point" : "points"
   end
+
+  def assign_player_marker(human_marker_choice)
+    if self.class == Human
+      self.marker = human_marker_choice.upcase == 'O' ? 'O' : 'X'
+    elsif self.class == Computer
+      self.marker = human_marker_choice.upcase == 'O' ? 'X' : 'O'
+    end
+  end
 end
 
 class Human < Player
@@ -335,10 +343,6 @@ class Human < Player
     )
   end
 
-  def assign_player_marker(human_marker_choice)
-    self.marker = human_marker_choice.upcase == 'O' ? 'O' : 'X'
-  end
-
   def ask_move(unmarked_keys)
     ask_numeric_choice(
       "Choose a square (#{joinor(unmarked_keys)}):",
@@ -351,10 +355,6 @@ class Computer < Player
   def initialize
     @name = COMPUTER_NAME
     super
-  end
-
-  def assign_player_marker(human_marker_choice)
-    self.marker = human_marker_choice.upcase == 'O' ? 'X' : 'O'
   end
 end
 
