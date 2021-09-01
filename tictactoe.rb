@@ -325,12 +325,8 @@ class Player
     score == 1 ? "point" : "points"
   end
 
-  def assign_player_marker(human_marker_choice)
-    self.marker = if self.class == Human
-                    human_marker_choice.upcase == TTTGame::DEF_MARK ? TTTGame::DEF_MARK : TTTGame::ALT_MARK
-                  elsif self.class == Computer
-                    human_marker_choice.upcase == TTTGame::ALT_MARK ? TTTGame::DEF_MARK : TTTGame::ALT_MARK
-                  end
+  def assign_player_marker(marker_choice)
+    self.marker = marker_choice
   end
 end
 
@@ -340,12 +336,13 @@ class Human < Player
     super
   end
 
-  def decide_player_markers
-    ask_closed_question(
+  def choose_marker
+    choice = ask_closed_question(
       "#{TTTGame::DEF_MARK} goes first. " \
       "Would you like to be '#{TTTGame::DEF_MARK}' or '#{TTTGame::ALT_MARK}'?",
       [TTTGame::DEF_MARK, TTTGame::ALT_MARK]
     )
+    choice == TTTGame::DEF_MARK.downcase ? TTTGame::DEF_MARK : TTTGame::ALT_MARK
   end
 
   def ask_move(unmarked_keys)
@@ -411,9 +408,10 @@ class TTTGame
   end
 
   def determine_player_markers
-    human_marker_choice = human.decide_player_markers
-    human.assign_player_marker(human_marker_choice)
-    computer.assign_player_marker(human_marker_choice)
+    human_choice = human.choose_marker
+    computer_choice = human_choice == DEF_MARK ? ALT_MARK : DEF_MARK
+    human.assign_player_marker(human_choice)
+    computer.assign_player_marker(computer_choice)
     board.human_marker = human.marker
     board.computer_marker = computer.marker
   end
