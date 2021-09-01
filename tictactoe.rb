@@ -326,10 +326,6 @@ class Player
   def point_string
     score == 1 ? "point" : "points"
   end
-
-  def assign_marker(choice)
-    self.marker = choice
-  end
 end
 
 class Human < Player
@@ -338,13 +334,15 @@ class Human < Player
     super
   end
 
-  def marker_choice
-    case choose_marker
-    when TTTGame::DEF_MARK.downcase then TTTGame::DEF_MARK
-    when TTTGame::ALT_MARK.downcase then TTTGame::ALT_MARK
-    else
-      [TTTGame::DEF_MARK, TTTGame::ALT_MARK].sample
-    end
+  def assign_marker
+    self.marker = case choose_marker
+                  when TTTGame::DEF_MARK.downcase
+                    TTTGame::DEF_MARK
+                  when TTTGame::ALT_MARK.downcase
+                    TTTGame::ALT_MARK
+                  else
+                    [TTTGame::DEF_MARK, TTTGame::ALT_MARK].sample
+                  end
   end
 
   def choose_marker
@@ -370,6 +368,10 @@ class Computer < Player
     @name = COMPUTER_NAME
     super
   end
+
+  # def assign_marker(choice)
+  #   self.marker = choice
+  # end
 end
 
 class TTTGame
@@ -420,12 +422,16 @@ class TTTGame
   end
 
   def determine_player_markers
-    human_choice = human.marker_choice
-    computer_choice = human_choice == DEF_MARK ? ALT_MARK : DEF_MARK
-    human.assign_marker(human_choice)
-    computer.assign_marker(computer_choice)
+    human.assign_marker
+    computer.marker = determine_computer_marker
+    # computer_choice = human_choice == DEF_MARK ? ALT_MARK : DEF_MARK
+    # computer.assign_marker(computer_choice)
     board.human_marker = human.marker
     board.computer_marker = computer.marker
+  end
+
+  def determine_computer_marker
+    human.marker == DEF_MARK ? ALT_MARK : DEF_MARK
   end
 
   def player_moves
