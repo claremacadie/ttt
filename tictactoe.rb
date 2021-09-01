@@ -336,13 +336,23 @@ class Human < Player
     super
   end
 
+  def marker_choice
+    case choose_marker
+    when TTTGame::DEF_MARK.downcase then TTTGame::DEF_MARK
+    when TTTGame::ALT_MARK.downcase then TTTGame::ALT_MARK
+    else
+      [TTTGame::DEF_MARK, TTTGame::ALT_MARK].sample
+    end
+  end
+
   def choose_marker
-    choice = ask_closed_question(
-      "#{TTTGame::DEF_MARK} goes first. " \
-      "Would you like to be '#{TTTGame::DEF_MARK}' or '#{TTTGame::ALT_MARK}'?",
-      [TTTGame::DEF_MARK, TTTGame::ALT_MARK]
+    puts "#{TTTGame::DEF_MARK} goes first. "
+    question = "Would you like to be '#{TTTGame::DEF_MARK}' " \
+      "or '#{TTTGame::ALT_MARK}'? (Press enter for random choice.)"
+
+    ask_closed_question(
+      question, [TTTGame::DEF_MARK, TTTGame::ALT_MARK, ""]
     )
-    choice == TTTGame::DEF_MARK.downcase ? TTTGame::DEF_MARK : TTTGame::ALT_MARK
   end
 
   def ask_move(unmarked_keys)
@@ -408,7 +418,7 @@ class TTTGame
   end
 
   def determine_player_markers
-    human_choice = human.choose_marker
+    human_choice = human.marker_choice
     computer_choice = human_choice == DEF_MARK ? ALT_MARK : DEF_MARK
     human.assign_marker(human_choice)
     computer.assign_marker(computer_choice)
