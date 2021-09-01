@@ -134,7 +134,7 @@ module Displayable
 
   def display_champion
     blank_line
-    puts "#{match_winner.name} won 5 games and is the CHAMPION!"
+    puts "#{champion} won 5 games and is the CHAMPION!"
     blank_line
   end
 
@@ -370,6 +370,7 @@ class TTTGame
   WINS_LIMIT = 5
 
   attr_reader :board, :human, :computer
+  attr_accessor :champion
 
   def initialize
     clear
@@ -384,7 +385,7 @@ class TTTGame
     display_welcome_message
     loop do
       main_game
-      display_champion if match_winner
+      display_champion
       break unless play_again?
       reset_match
       display_rematch_message
@@ -457,11 +458,11 @@ class TTTGame
   end
 
   def match_winner
-    if human.score == WINS_LIMIT
-      human
-    elsif computer.score == WINS_LIMIT
-      computer
-    end
+    self.champion = if human.score == WINS_LIMIT
+                 human.name
+               elsif computer.score == WINS_LIMIT
+                 computer.name
+               end
   end
 
   def reset_board
@@ -473,6 +474,7 @@ class TTTGame
     reset_board
     human.score = 0
     computer.score = 0
+    champion = nil
   end
 end
 
