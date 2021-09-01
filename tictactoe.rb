@@ -62,16 +62,20 @@ module Questionable
     answer
   end
 
-  def ask_numeric_choice(question, options)
+  def ask_integer_choice(question, options)
     answer = nil
     loop do
       puts question
-      answer = gets.chomp.strip.to_i
-      break if options.include?(answer)
-      puts "Sorry, that's not a valid choice."
+      answer = gets.chomp.strip
+      break if options.include?(answer.to_i) && integer?(answer)
+      puts "Sorry, that's not a valid choice, must be an integer."
       blank_line
     end
-    answer
+    answer.to_i
+  end
+
+  def integer?(str)
+    str == str.to_i.to_s
   end
 end
 
@@ -230,17 +234,7 @@ class Board
   end
 
   def find_best_square
-    computer_offense_move || computer_defense_move || alternative_move
-
-    # if computer_offense_move
-    #   computer_offense_move
-    # elsif computer_defense_move
-    #   computer_defense_move
-    # elsif self[CENTER_SQUARE].unmarked?
-    #   self[CENTER_SQUARE]
-    # else
-    #   self[unmarked_keys.sample]
-    # end
+    computer_offense_move || computer_defense_move || basic_move
   end
 
   private
@@ -280,7 +274,7 @@ class Board
     squares.select(&:unmarked?).first
   end
 
-  def alternative_move
+  def basic_move
     if self[CENTER_SQUARE].unmarked?
       self[CENTER_SQUARE]
     else
@@ -354,7 +348,7 @@ class Human < Player
   end
 
   def ask_move(unmarked_keys)
-    ask_numeric_choice(
+    ask_integer_choice(
       "Choose a square (#{joinor(unmarked_keys)}):",
       unmarked_keys
     )
