@@ -112,7 +112,7 @@ module Displayable
 
   def display_scores
     puts <<~SCORES
-    Remember, the first to win 5 games is the Champion!
+    Remember, the first to win #{TTTGame::WINS_LIMIT} games is the Champion!
     #{human.name} has #{human.score} #{human.point_string}.
     #{computer.name} has #{computer.score} #{computer.point_string}.
     SCORES
@@ -246,14 +246,14 @@ class Board
   end
 
   def computer_offense_move
-    computer_strategic_move(computer_marker)
+    find_potential_winning_move(computer_marker)
   end
 
   def computer_defense_move
-    computer_strategic_move(human_marker)
+    find_potential_winning_move(human_marker)
   end
 
-  def computer_strategic_move(marker)
+  def find_potential_winning_move(marker)
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
       square = find_at_risk_square(squares, marker)
@@ -327,9 +327,9 @@ class Player
 
   def assign_player_marker(human_marker_choice)
     self.marker = if self.class == Human
-                    human_marker_choice.upcase == 'O' ? 'O' : 'X'
+                    human_marker_choice.upcase == TTTGame::DEF_MARK ? TTTGame::DEF_MARK : TTTGame::ALT_MARK
                   elsif self.class == Computer
-                    human_marker_choice.upcase == 'O' ? 'X' : 'O'
+                    human_marker_choice.upcase == TTTGame::ALT_MARK ? TTTGame::DEF_MARK : TTTGame::ALT_MARK
                   end
   end
 end
@@ -342,8 +342,9 @@ class Human < Player
 
   def decide_player_markers
     ask_closed_question(
-      "#{TTTGame::FIRST_TO_MOVE} goes first. Would you like to be 'X' or 'O'?",
-      ['x', 'o']
+      "#{TTTGame::DEF_MARK} goes first. " \
+      "Would you like to be '#{TTTGame::DEF_MARK}' or '#{TTTGame::ALT_MARK}'?",
+      [TTTGame::DEF_MARK, TTTGame::ALT_MARK]
     )
   end
 
@@ -366,7 +367,8 @@ class TTTGame
   include Questionable
   include Displayable
 
-  FIRST_TO_MOVE = 'X'
+  DEF_MARK = 'X'
+  ALT_MARK = 'O'
   WINS_LIMIT = 5
 
   attr_reader :board, :human, :computer
@@ -377,7 +379,7 @@ class TTTGame
     @board = Board.new
     @human = Human.new
     @computer = Computer.new
-    @current_marker = FIRST_TO_MOVE
+    @current_marker = DEF_MARK
   end
 
   def play
@@ -385,7 +387,7 @@ class TTTGame
     display_welcome_message
     loop do
       main_game
-      display_champion
+      display_champion if champion
       break unless play_again?
       reset_match
       display_rematch_message
@@ -459,22 +461,22 @@ class TTTGame
 
   def match_winner
     self.champion = if human.score == WINS_LIMIT
-                 human.name
-               elsif computer.score == WINS_LIMIT
-                 computer.name
-               end
+                      human.name
+                    elsif computer.score == WINS_LIMIT
+                      computer.name
+                    end
   end
 
   def reset_board
     board.reset
-    @current_marker = FIRST_TO_MOVE
+    @current_marker = DEF_MARK
   end
 
   def reset_match
     reset_board
     human.score = 0
     computer.score = 0
-    champion = nil
+    self.champion = nil
   end
 end
 
