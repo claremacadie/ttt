@@ -134,7 +134,7 @@ module Displayable
 
   def display_champion
     blank_line
-    puts "#{champion} won 5 games and is the CHAMPION!"
+    puts "#{champion} won #{TTTGame::WINS_LIMIT} games and is the CHAMPION!"
     blank_line
   end
 
