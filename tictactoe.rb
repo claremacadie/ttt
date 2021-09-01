@@ -325,8 +325,8 @@ class Player
     score == 1 ? "point" : "points"
   end
 
-  def assign_player_marker(marker_choice)
-    self.marker = marker_choice
+  def assign_marker(choice)
+    self.marker = choice
   end
 end
 
@@ -410,8 +410,8 @@ class TTTGame
   def determine_player_markers
     human_choice = human.choose_marker
     computer_choice = human_choice == DEF_MARK ? ALT_MARK : DEF_MARK
-    human.assign_player_marker(human_choice)
-    computer.assign_player_marker(computer_choice)
+    human.assign_marker(human_choice)
+    computer.assign_marker(computer_choice)
     board.human_marker = human.marker
     board.computer_marker = computer.marker
   end
