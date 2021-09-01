@@ -381,7 +381,7 @@ class TTTGame
   WINS_LIMIT = 5
 
   attr_reader :board, :human, :computer
-  attr_accessor :champion
+  attr_accessor :champion, :current_marker
 
   def initialize
     clear
@@ -410,7 +410,7 @@ class TTTGame
     loop do
       determine_player_markers
       display_board
-      player_move
+      player_moves
       update_score
       display_result_and_scores
       break if match_winner
@@ -428,37 +428,38 @@ class TTTGame
     board.computer_marker = computer.marker
   end
 
-  def player_move
+  def player_moves
     loop do
-      current_player_moves
+      current_player_move
       break if board.someone_won? || board.full?
       clear_screen_and_display_board if human_turn?
     end
   end
 
-  def current_player_moves
+  def current_player_move
+    square_key = choose_move_square
+    board[square_key] = current_marker
+    self.current_marker = toggle_current_player
+  end
+
+  def choose_move_square
     if human_turn?
-      human_moves
-      @current_marker = computer.marker
+      human.ask_move(board.unmarked_keys)
     else
-      computer_moves
-      @current_marker = human.marker
+      board.find_best_square.id
     end
   end
 
   def human_turn?
-    @current_marker == human.marker
+    current_marker == human.marker
   end
 
-  def human_moves
-    square_key = human.ask_move(board.unmarked_keys)
-    board[square_key] = human.marker
-  end
-
-  def computer_moves
-    p square_key = board.find_best_square.id
-    gets
-    board[square_key] = computer.marker
+  def toggle_current_player
+    if current_marker == human.marker
+      computer.marker
+    else
+      human.marker
+    end
   end
 
   def update_score
