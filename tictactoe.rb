@@ -230,15 +230,17 @@ class Board
   end
 
   def find_best_square
-    if computer_offense_move
-      computer_offense_move
-    elsif computer_defense_move
-      computer_defense_move
-    elsif self[CENTER_SQUARE].unmarked?
-      self[CENTER_SQUARE]
-    else
-      self[unmarked_keys.sample]
-    end
+    computer_offense_move || computer_defense_move || alternative_move
+
+    # if computer_offense_move
+    #   computer_offense_move
+    # elsif computer_defense_move
+    #   computer_defense_move
+    # elsif self[CENTER_SQUARE].unmarked?
+    #   self[CENTER_SQUARE]
+    # else
+    #   self[unmarked_keys.sample]
+    # end
   end
 
   private
@@ -276,6 +278,14 @@ class Board
 
   def empty_square(squares)
     squares.select(&:unmarked?).first
+  end
+
+  def alternative_move
+    if self[CENTER_SQUARE].unmarked?
+      self[CENTER_SQUARE]
+    else
+      self[unmarked_keys.sample]
+    end
   end
 end
 
@@ -322,11 +332,11 @@ class Player
   end
 
   def assign_player_marker(human_marker_choice)
-    if self.class == Human
-      self.marker = human_marker_choice.upcase == 'O' ? 'O' : 'X'
-    elsif self.class == Computer
-      self.marker = human_marker_choice.upcase == 'O' ? 'X' : 'O'
-    end
+    self.marker = if self.class == Human
+                    human_marker_choice.upcase == 'O' ? 'O' : 'X'
+                  elsif self.class == Computer
+                    human_marker_choice.upcase == 'O' ? 'X' : 'O'
+                  end
   end
 end
 
