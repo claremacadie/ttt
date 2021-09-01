@@ -183,6 +183,7 @@ class Board
 
   def []=(num, marker)
     @squares[num].marker = marker
+    @squares[num].id = " "
   end
 
   def [](num)
@@ -190,21 +191,21 @@ class Board
   end
 
   def reset
-    (1..9).each { |key| @squares[key] = Square.new }
+    (1..9).each { |key| @squares[key] = Square.new(key) }
   end
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def draw
-    puts "     |     |"
+    puts "#{@squares[1].id}    |#{@squares[2].id}    |#{@squares[3].id}"
     puts "  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}"
     puts "     |     |"
     puts "-----+-----+-----"
-    puts "     |     |"
+    puts "#{@squares[4].id}    |#{@squares[5].id}    |#{@squares[6].id}"
     puts "  #{@squares[4]}  |  #{@squares[5]}  |  #{@squares[6]}"
     puts "     |     |"
     puts "-----+-----+-----"
-    puts "     |     |"
+    puts "#{@squares[7].id}    |#{@squares[8].id}    |#{@squares[9].id}"
     puts "  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}"
     puts "     |     |"
   end
@@ -286,9 +287,10 @@ end
 class Square
   INITIAL_MARKER = " "
 
-  attr_accessor :marker
+  attr_accessor :id, :marker
 
-  def initialize(marker = INITIAL_MARKER)
+  def initialize(id, marker = INITIAL_MARKER)
+    @id = id
     @marker = marker
   end
 
@@ -454,8 +456,9 @@ class TTTGame
   end
 
   def computer_moves
-    square = board.find_best_square
-    square.marker = computer.marker
+    p square_key = board.find_best_square.id
+    gets
+    board[square_key] = computer.marker
   end
 
   def update_score
