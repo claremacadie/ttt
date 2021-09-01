@@ -355,7 +355,7 @@ class Human < Player
 
   def ask_move(unmarked_keys)
     ask_integer_choice(
-      "Choose a square (#{joinor(unmarked_keys)}):",
+      "Choose a square (#{joinor(unmarked_keys.dup)}):",
       unmarked_keys
     )
   end
@@ -384,7 +384,7 @@ class TTTGame
     @board = Board.new
     @human = Human.new
     @computer = Computer.new
-    @current_marker = DEF_MARK # This sets who moves first
+    @current_marker = DEF_MARK # This sets which marker moves first
   end
 
   def play
