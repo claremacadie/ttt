@@ -80,8 +80,6 @@ module Questionable
 end
 
 module Displayable
-  # include Formattable
-
   def display_welcome_message
     clear
     puts <<~WELCOME
@@ -386,7 +384,7 @@ class TTTGame
     @board = Board.new
     @human = Human.new
     @computer = Computer.new
-    @current_marker = DEF_MARK
+    @current_marker = DEF_MARK # This sets who moves first
   end
 
   def play
