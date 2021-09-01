@@ -80,7 +80,7 @@ module Questionable
 end
 
 module Displayable
-  include Formattable
+  # include Formattable
 
   def display_welcome_message
     clear
@@ -368,10 +368,6 @@ class Computer < Player
     @name = COMPUTER_NAME
     super
   end
-
-  # def assign_marker(choice)
-  #   self.marker = choice
-  # end
 end
 
 class TTTGame
@@ -424,8 +420,6 @@ class TTTGame
   def determine_player_markers
     human.assign_marker
     computer.marker = determine_computer_marker
-    # computer_choice = human_choice == DEF_MARK ? ALT_MARK : DEF_MARK
-    # computer.assign_marker(computer_choice)
     board.human_marker = human.marker
     board.computer_marker = computer.marker
   end
