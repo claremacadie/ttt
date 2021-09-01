@@ -88,7 +88,6 @@ module Displayable
     blank_line
   end
 
-
   def display_result_and_scores
     display_result
     display_scores
@@ -328,12 +327,42 @@ class Human < Player
     @name = ask_open_question("What's your name?", COMPUTER_NAME)
     super
   end
+
+  def decide_player_markers
+    ask_closed_question(
+      "#{TTTGame::FIRST_TO_MOVE} goes first. Would you like to be 'X' or 'O'?",
+      ['x', 'o']
+    )
+  end
+
+  def assign_player_marker(human_marker_choice)
+    self.marker = if human_marker_choice.upcase == 'O'
+                    'O'
+                  else
+                    'X'
+                  end
+  end
+
+  def ask_move(unmarked_keys)
+    ask_numeric_choice(
+      "Choose a square (#{joinor(unmarked_keys)}):",
+      unmarked_keys
+    )
+  end
 end
 
 class Computer < Player
   def initialize
     @name = COMPUTER_NAME
     super
+  end
+
+  def assign_player_marker(human_marker_choice)
+    self.marker = if human_marker_choice.upcase == 'O'
+                    'X'
+                  else
+                    'O'
+                  end
   end
 end
 
@@ -369,10 +398,9 @@ class TTTGame
 
   private
 
-
   def main_game
     loop do
-      decide_player_markers
+      determine_player_markers
       display_board
       player_move
       update_score
@@ -383,22 +411,10 @@ class TTTGame
     end
   end
 
-  def decide_player_markers
-    human_marker_choice = ask_closed_question(
-      "#{FIRST_TO_MOVE} goes first. Would you like to be 'X' or 'O'?",
-      ['x', 'o']
-    )
-    assign_player_markers(human_marker_choice)
-  end
-
-  def assign_player_markers(human_marker_choice)
-    if human_marker_choice.upcase == 'O'
-      human.marker = 'O'
-      computer.marker = 'X'
-    else
-      human.marker = 'X'
-      computer.marker = 'O'
-    end
+  def determine_player_markers
+    human_marker_choice = human.decide_player_markers
+    human.assign_player_marker(human_marker_choice)
+    computer.assign_player_marker(human_marker_choice)
     board.human_marker = human.marker
     board.computer_marker = computer.marker
   end
@@ -426,15 +442,13 @@ class TTTGame
   end
 
   def human_moves
-    square = ask_numeric_choice(
-      "Choose a square (#{joinor(board.unmarked_keys)}):",
-      board.unmarked_keys
-    )
-    board[square] = human.marker
+    square_key = human.ask_move(board.unmarked_keys)
+    board[square_key] = human.marker
   end
 
   def computer_moves
-    board.find_best_square.marker = computer.marker
+    square = board.find_best_square
+    square.marker = computer.marker
   end
 
   def update_score
