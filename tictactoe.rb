@@ -336,11 +336,7 @@ class Human < Player
   end
 
   def assign_player_marker(human_marker_choice)
-    self.marker = if human_marker_choice.upcase == 'O'
-                    'O'
-                  else
-                    'X'
-                  end
+    self.marker = human_marker_choice.upcase == 'O' ? 'O' : 'X'
   end
 
   def ask_move(unmarked_keys)
@@ -358,11 +354,7 @@ class Computer < Player
   end
 
   def assign_player_marker(human_marker_choice)
-    self.marker = if human_marker_choice.upcase == 'O'
-                    'X'
-                  else
-                    'O'
-                  end
+    self.marker = human_marker_choice.upcase == 'O' ? 'X' : 'O'
   end
 end
 
